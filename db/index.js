@@ -139,4 +139,5 @@ async function createReportComment(reportId, commentFields) {
 // export the client and all database functions below
 module.exports = {
   client,
+  createReportComment
 };

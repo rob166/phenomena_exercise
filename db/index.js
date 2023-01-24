@@ -10,6 +10,8 @@ const client = new Client({
 // Create the client using new Client(CONNECTION_STRING)
 // Do not connect to the client in this file!
 
+const { report } = require('')
+
 /**
  * Report Related Methods
  */
@@ -50,14 +52,26 @@ async function getOpenReports() {
  * Make sure to remove the password from the report object
  * before returning it.
  */
-async function createReport(reportFields) {
+async function createReport({
+  title,
+  location,
+  description,
+  password
+}) {
   // Get all of the fields from the passed in object
 
   try {
-    // insert the correct fields into the reports table
+    const { rows: [ report ] } = await client.query(`
+    INSERT INTO reports(title, location, description, password)
+    VALUES ($1, $2, $3, $4)
+    DROP COLUMN password
+    RETURNING *;
+    `, [title, location, description, password])
     // remember to return the new row from the query
     // remove the password from the returned row
     // return the new report
+    console.log(report)
+    return report;
   } catch (error) {
     throw error;
   }
@@ -139,4 +153,9 @@ async function createReportComment(reportId, commentFields) {
 // export the client and all database functions below
 module.exports = {
   client,
+  getOpenReports,
+  createReport,
+  _getReport,
+  closeReport,
+  createReportComment
 };

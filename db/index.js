@@ -52,31 +52,38 @@ async function getOpenReports() {
  * Make sure to remove the password from the report object
  * before returning it.
  */
-async function createReport({
-  title,
-  location,
-  description,
-  password
-}) {
+async function createReport(reportFields) {
+
   // Get all of the fields from the passed in object
+  const { title, location, description, password } = reportFields;
 
   try {
-    const { rows: [ report ] } = await client.query(`
-    INSERT INTO reports(title, location, description, password)
-    VALUES ($1, $2, $3, $4)
-    DROP COLUMN password
-    RETURNING *;
-    `, [title, location, description, password])
+    const { rows: [report] } = await client.query(`
+    INSERT INTO reports(
+      title, 
+      location, 
+      description, 
+      password)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+    `, [
+      title,
+      location,
+      description,
+      password
+    ]);
+
+    delete report.password;
+
+    return report;
+    // insert the correct fields into the reports table
     // remember to return the new row from the query
     // remove the password from the returned row
     // return the new report
-    console.log(report)
-    return report;
   } catch (error) {
     throw error;
   }
 }
-
 /**
  * NOTE: This function is not for use in other files, so we use an _ to
  * remind us that it is only to be used internally.

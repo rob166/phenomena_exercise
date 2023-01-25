@@ -25,11 +25,28 @@ const client = new Client({
  */
 async function getOpenReports() {
   try {
-    const { report } = await client.query(`
-          SELECT *
-          FROM reports
-          WHERE "isOpen"===true;
-        `);
+
+    const { rows: reports } = await client.query(`
+      SELECT * FROM reports WHERE "isOpen" = TRUE;
+      `);
+
+    for (let i = 0; i < reports.length; ++i) {
+      const report = reports[i];
+      const { rows: comments } = await client.query(`
+      SELECT * FROM comments WHERE "reportId"=$1
+      `, [report.id]);
+
+      report.comments = [];
+
+      for (let j = 0; j < comments.length; ++j) {
+        report.comments.push(comments[j])
+      }
+
+      report.isExpired = Date.parse(report.expirationDate) < new Date();
+      delete report.password;
+
+    }
+
     // first load all of the reports which are open
     // then load the comments only for those reports, using a
     // WHERE "reportId" IN () clause
@@ -41,9 +58,8 @@ async function getOpenReports() {
     // also, remove the password from all reports
     // finally, return the reports
 
-    delete report.password;
-
-    return report;
+    console.log(reports);
+    return reports;
 
   } catch (error) {
     throw error;
@@ -65,7 +81,7 @@ async function getOpenReports() {
 async function createReport(reportFields) {
 
   // Get all of the fields from the passed in object
-const {title, location, description, password} = reportFields;
+  const { title, location, description, password } = reportFields;
 
   try {
     const { rows: [report] } = await client.query(`

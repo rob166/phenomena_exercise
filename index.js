@@ -22,19 +22,22 @@ server.use('/api', router);
 // Import the client from your db/index.js
 const { client } = require('./db');
 // Create custom 404 handler that sets the status code to 404.
-const ErrorHandler = ((err, req, res, next) => {
+const errorHandler404 = ((err, req, res, next) => {
       res.status(404)
-    })
-server.use(ErrorHandler)
+      next(err)
+})
+server.use(errorHandler404)
 // Create custom error handling that sets the status code to 500
 // and returns the error as an object
-const ErrorHandler500 = ((err, req, res, next) => {
+const errorHandler500 = ((err, req, res, next) => {
       res.status(500)
-    })
-    server.use(ErrorHandler500)
+      res.render('error', { error: err })
+})
+server.use(errorHandler500)
 // Start the server listening on port PORT
 // On success, connect to the database
 server.listen(PORT, () => {
       console.log('The server is up on port', PORT)
       client.connect();
 });
+

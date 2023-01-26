@@ -51,3 +51,6 @@
 
 
 // Export the apiRouter
+module.exports = {
+    apiRouter
+}

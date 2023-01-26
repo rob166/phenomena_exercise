@@ -10,8 +10,6 @@ const client = new Client({
 // Create the client using new Client(CONNECTION_STRING)
 // Do not connect to the client in this file!
 
-const { report } = require('')
-
 /**
  * Report Related Methods
  */
@@ -26,6 +24,28 @@ const { report } = require('')
  */
 async function getOpenReports() {
   try {
+
+    const { rows: reports } = await client.query(`
+      SELECT * FROM reports WHERE "isOpen" = TRUE;
+      `);
+
+    for (let i = 0; i < reports.length; ++i) {
+      const report = reports[i];
+      const { rows: comments } = await client.query(`
+      SELECT * FROM comments WHERE "reportId"=$1
+      `, [report.id]);
+
+      report.comments = [];
+
+      for (let j = 0; j < comments.length; ++j) {
+        report.comments.push(comments[j])
+      }
+
+      report.isExpired = Date.parse(report.expirationDate) < new Date();
+      delete report.password;
+
+    }
+
     // first load all of the reports which are open
     // then load the comments only for those reports, using a
     // WHERE "reportId" IN () clause
@@ -36,10 +56,15 @@ async function getOpenReports() {
     //    you can use Date.parse(report.expirationDate) < new Date()
     // also, remove the password from all reports
     // finally, return the reports
+
+    console.log(reports);
+    return reports;
+
   } catch (error) {
     throw error;
   }
 }
+
 
 /**
  * You should use the reportFields parameter (which is
@@ -100,8 +125,14 @@ async function createReport(reportFields) {
  */
 async function _getReport(reportId) {
   try {
+    const { rows: [report] } = await client.query(`
+        SELECT *
+        FROM reports
+        WHERE id=${ reportId };
+      `);
     // SELECT the report with id equal to reportId
     // return the report
+    return report;
   } catch (error) {
     throw error;
   }
@@ -118,6 +149,30 @@ async function _getReport(reportId) {
  */
 async function closeReport(reportId, password) {
   try {
+      const report  = await _getReport(reportId, password);
+      if (!report) {
+        throw new Error('Report does not exist with that id');
+      }
+
+      else if (report.password !== password) {
+        throw new Error('Password incorrect for this report, please try again');
+      }
+
+      else if (!report.isOpen) {
+        throw new Error('This report has already been closed')
+      }
+
+      await client.query(`
+      UPDATE reports
+      SET "isOpen" = FALSE
+      RETURNING *;`
+      )
+
+      if (report.isOpen){
+
+      return {"message": "Report successfully closed!"};
+      }
+
     // First, actually grab the report with that id
     // If it doesn't exist, throw an error with a useful message
     // If the passwords don't match, throw an error

@@ -197,8 +197,25 @@ async function closeReport(reportId, password) {
  */
 async function createReportComment(reportId, commentFields) {
   // read off the content from the commentFields
+  const  content  = commentFields;
+
 
   try {
+    const report  = await _getReport(reportId);
+
+    if (!report) {
+      throw new Error('That report does not exist, no comment has been made');
+    }
+
+    if (!report.isOpen){
+      throw new Error('That report has been closed, no comment has been made')
+    }
+
+    if (Date.parse(report.expirationDate) < new Date()) {
+      throw new Error('The discussion time on this report has expired, no comment has been made')
+    }
+
+    return content;
     // grab the report we are going to be commenting on
     // if it wasn't found, throw an error saying so
     // if it is not open, throw an error saying so

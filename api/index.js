@@ -19,7 +19,17 @@ const {
  * - on caught error, call next(error)
  */
 
+apiRouter.get('/reports', async (req, res, next) => {
+    try {
+          const openReports = await getOpenReports();
 
+          res.send({
+                reports: openReports
+          });
+    } catch ({ name, message }) {
+          next({ name, message });
+    }
+});
 
 /**
  * Set up a POST request for /reports
@@ -41,7 +51,6 @@ apiRouter.post('/reports', async (req, res, next) => {
         reportData.description = description;
         reportData.password = password;
         const report = await createReport(reportData);
-        console.log(report)
         if (report) {
             res.send(report)
         }
@@ -64,6 +73,21 @@ apiRouter.post('/reports', async (req, res, next) => {
  */
 
 
+apiRouter.delete('/reports/:reportId', async (req, res, next) => {
+    const { password } = req.body;
+
+    try {
+          const report = await closeReport(req.params.reportId, password);
+          if (report) {
+                res.send(report)
+          }
+
+    } catch (error) {
+          next(error);
+    }
+});
+
+
 
 /**
  * Set up a POST request for /reports/:reportId/comments
@@ -75,7 +99,22 @@ apiRouter.post('/reports', async (req, res, next) => {
  * - on caught error, call next(error)
  */
 
+apiRouter.post('/reports/:reportId/comments', async (req, res, next) => {
+    const  content  = req.body;
+    const  reportId = req.params.reportId;
+    console.log('TEST', content.content, reportId)
+  
 
+    try {
+        const comment = await createReportComment(reportId, content);
+        console.log('FINAL', comment)
+        if (comment) {
+            res.send( comment );
+        }
+    } catch(error){
+        next(error);
+    }
+})
 
 // Export the apiRouter
 module.exports = apiRouter

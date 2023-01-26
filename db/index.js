@@ -57,7 +57,6 @@ async function getOpenReports() {
     // also, remove the password from all reports
     // finally, return the reports
 
-    console.log(reports);
     return reports;
 
   } catch (error) {
@@ -197,7 +196,9 @@ async function closeReport(reportId, password) {
  */
 async function createReportComment(reportId, commentFields) {
   // read off the content from the commentFields
-  const  content  = commentFields;
+const content  = commentFields;
+  console.log('CONTENT', content);
+  console.log('REPORTID', reportId)
 
 
   try {
@@ -207,13 +208,20 @@ async function createReportComment(reportId, commentFields) {
       throw new Error('That report does not exist, no comment has been made');
     }
 
-    if (!report.isOpen){
+    else if (!report.isOpen){
       throw new Error('That report has been closed, no comment has been made')
     }
 
-    if (Date.parse(report.expirationDate) < new Date()) {
+    else if (Date.parse(report.expirationDate) < new Date()) {
       throw new Error('The discussion time on this report has expired, no comment has been made')
     }
+
+    await client.query(`
+    INSERT INTO comments(content)
+    VALUES($1)
+    RETURNING *;
+      `, [content]);
+
 
     return content;
     // grab the report we are going to be commenting on

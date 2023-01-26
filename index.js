@@ -22,6 +22,8 @@ server.use('/api', router);
 // Import the client from your db/index.js
 const { client } = require('./db');
 // Create custom 404 handler that sets the status code to 404.
+
+
 server.use(function(req, res) {
     res.send('404: Page not Found', 404);
   });

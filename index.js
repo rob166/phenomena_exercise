@@ -1,55 +1,40 @@
 // Use the dotenv package, to create environment variables
-
-// Create a constant variable, PORT, based on what's in process.env.PORT or fallback to 3000
-
-// Import express, and create a server
-
-// Require morgan and body-parser middleware
-
-// Have the server use morgan with setting 'dev'
-
-// Import cors 
-// Have the server use cors()
-
-// Have the server use bodyParser.json()
-
-// Have the server use your api router with prefix '/api'
-
-// Import the client from your db/index.js
-
-// Create custom 404 handler that sets the status code to 404.
-
-// Create custom error handling that sets the status code to 500
-// and returns the error as an object
-
-
-// Start the server listening on port PORT
-// On success, connect to the database
-
 require('dotenv').config();
-const PORT = 3000;
+// Create a constant variable, PORT, based on what's in process.env.PORT or fallback to 3000
+const PORT = process.env.PORT || 3000;
+// Import express, and create a server
 const express = require('express');
 const server = express();
+// Require morgan and body-parser middleware
 const morgan = require('morgan');
+const bodyParser = require('body-parser')
+// Have the server use morgan with setting 'dev'
 server.use(morgan('dev'));
-
-server.use(express.json())
-
-const apiRouter = require('./api');
-server.use('/api', apiRouter);
-
-server.use((req, res, next) => {
-    console.log("<____Body Logger START____>");
-    console.log(req.body);
-    console.log("<_____Body Logger END_____>");
-
-    next();
-});
-
-
+// Import cors 
+const cors = require('cors');
+// Have the server use cors()
+server.use(cors());
+// Have the server use bodyParser.json()
+server.use(bodyParser.json());
+// Have the server use your api router with prefix '/api'
+const router = require('./api');
+server.use('/api', router);
+// Import the client from your db/index.js
 const { client } = require('./db');
-client.connect();
-
+// Create custom 404 handler that sets the status code to 404.
+const ErrorHandler = ((err, req, res, next) => {
+      res.status(404)
+    })
+server.use(ErrorHandler)
+// Create custom error handling that sets the status code to 500
+// and returns the error as an object
+const ErrorHandler500 = ((err, req, res, next) => {
+      res.status(500)
+    })
+    server.use(ErrorHandler500)
+// Start the server listening on port PORT
+// On success, connect to the database
 server.listen(PORT, () => {
-    console.log('The server is up on port', PORT)
+      console.log('The server is up on port', PORT)
+      client.connect();
 });

@@ -22,14 +22,17 @@ server.use('/api', router);
 // Import the client from your db/index.js
 const { client } = require('./db');
 // Create custom 404 handler that sets the status code to 404.
-// server.use(function(req, res) {
-//     res.send('404: Page not Found', 404);
-//   });
+server.use(function(req, res) {
+    res.send('404: Page not Found', 404);
+  });
   
 //   // Handle 500
 server.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.send({ error: err })
+    res.render('error', {
+      message: err.message,
+      error: {}
+    });
   });
 // Start the server listening on port PORT
 // On success, connect to the database

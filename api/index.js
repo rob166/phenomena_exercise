@@ -5,10 +5,10 @@ const apiRouter = express.Router();
 // Import the database adapter functions from the db
 const {
     getOpenReports,
-  createReport,
-  _getReport,
-  closeReport,
-  createReportComment
+    createReport,
+    _getReport,
+    closeReport,
+    createReportComment
 } = require('../db')
 /**
  * Set up a GET request for /reports
@@ -32,7 +32,7 @@ const {
 
 apiRouter.post('/reports', async (req, res, next) => {
     const { title, location, description, password } = req.body;
-    
+
     const reportData = {};
 
     try {
@@ -42,13 +42,14 @@ apiRouter.post('/reports', async (req, res, next) => {
         reportData.password = password;
         const report = await createReport(reportData);
         console.log(report)
-          if (report) {
-            res.send( report )
-          }
+        if (report) {
+            res.send(report)
+        }
 
     } catch (error) {
-        //   next(res.status(500).send(error));
-    }})
+          next(error);
+    }
+})
 
 
 
@@ -77,4 +78,4 @@ apiRouter.post('/reports', async (req, res, next) => {
 
 
 // Export the apiRouter
-module.exports =  apiRouter
+module.exports = apiRouter

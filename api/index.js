@@ -1,4 +1,6 @@
 // Build an apiRouter using express Router
+const express = require ('express');
+const apiRouter = express.Router();
 
 
 // Import the database adapter functions from the db
@@ -24,7 +26,12 @@
  * - on caught error, call next(error)
  */
 
+apiRouter.post('/reports' async (req, res, next) => {
 
+    await createReport (id, authorId, title, content)
+
+
+})
 
 /**
  * Set up a DELETE request for /reports/:reportId
@@ -48,6 +55,13 @@
  * - on caught error, call next(error)
  */
 
+apiRouter.post('/reports/reportId', async (req, res, next) => {
+    await createReportComment (reportId, req.body) => {
+
+    }
+    return createReportComment
+
+})
 
 
 // Export the apiRouter

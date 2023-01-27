@@ -16,6 +16,8 @@ const client = new Client({
 
 /**
  * You should select all reports which are open.
+ * 
+ * 
  *
  * Additionally you should fetch all comments for these
  * reports, and add them to the report objects with a new field, comments.
@@ -24,6 +26,25 @@ const client = new Client({
  */
 async function getOpenReports() {
   try {
+
+    const { rows: reports } = await client.query(
+      `SELECT * FROM reports WHERE "isOpen" = TRUE;`
+    );
+
+    for (let i=0; i < reports.length; ++i) {
+      const report = reports[i];
+      const { rows: comments } = await client.query (`SELECT * FROM comments WHERE "reportId"=$1`, [report.id]);
+
+      report.comments = [];
+
+      for (let j = 0; j < comments.length; ++j) {
+        report.comments.push(comments[j])
+      }
+
+
+
+
+    }
     // first load all of the reports which are open
     // then load the comments only for those reports, using a
     // WHERE "reportId" IN () clause
@@ -52,8 +73,10 @@ async function getOpenReports() {
  */
 async function createReport(reportFields) {
   // Get all of the fields from the passed in object
+  const { title, location, description, password } = reportFields;
 
   try {
+
     // insert the correct fields into the reports table
     // remember to return the new row from the query
     // remove the password from the returned row

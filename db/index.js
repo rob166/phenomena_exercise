@@ -57,7 +57,7 @@ async function getOpenReports() {
     // also, remove the password from all reports
     // finally, return the reports
 
-   // console.log(reports);
+    // console.log(reports);
     return reports;
 
   } catch (error) {
@@ -128,7 +128,7 @@ async function _getReport(reportId) {
     const { rows: [report] } = await client.query(`
         SELECT *
         FROM reports
-        WHERE id=${ reportId };
+        WHERE id=${reportId};
       `);
     // SELECT the report with id equal to reportId
     // return the report
@@ -149,29 +149,29 @@ async function _getReport(reportId) {
  */
 async function closeReport(reportId, password) {
   try {
-      const report  = await _getReport(reportId, password);
-      if (!report) {
-        throw new Error('Report does not exist with that id');
-      }
+    const report = await _getReport(reportId, password);
+    if (!report) {
+      throw new Error('Report does not exist with that id');
+    }
 
-      else if (report.password !== password) {
-        throw new Error('Password incorrect for this report, please try again');
-      }
+    else if (report.password !== password) {
+      throw new Error('Password incorrect for this report, please try again');
+    }
 
-      else if (!report.isOpen) {
-        throw new Error('This report has already been closed')
-      }
+    else if (!report.isOpen) {
+      throw new Error('This report has already been closed')
+    }
 
-      await client.query(`
+    await client.query(`
       UPDATE reports
       SET "isOpen" = FALSE
       RETURNING *;`
-      )
+    )
 
-      if (report.isOpen){
+    if (report.isOpen) {
 
-      return {"message": "Report successfully closed!"};
-      }
+      return { "message": "Report successfully closed!" };
+    }
 
     // First, actually grab the report with that id
     // If it doesn't exist, throw an error with a useful message
@@ -197,17 +197,18 @@ async function closeReport(reportId, password) {
  */
 async function createReportComment(reportId, commentFields) {
   // read off the content from the commentFields
-  const  content  = commentFields;
+
+  const { content } = commentFields;
 
 
   try {
-    const report  = await _getReport(reportId);
+    const report = await _getReport(reportId);
 
     if (!report) {
       throw new Error('That report does not exist, no comment has been made');
     }
 
-    if (!report.isOpen){
+    if (!report.isOpen) {
       throw new Error('That report has been closed, no comment has been made')
     }
 
@@ -215,7 +216,22 @@ async function createReportComment(reportId, commentFields) {
       throw new Error('The discussion time on this report has expired, no comment has been made')
     }
 
-    return content;
+    const { rows: [comment] } = await client.query(`
+    INSERT INTO comments(
+      "reportId",
+      content
+     )
+      VALUES ($1, $2)
+      RETURNING *;
+    `, [
+      reportId,
+      content
+    ]);
+
+    report.expirationDate = Date.parse(report.expirationDate) + 86400000;
+    console.log(report.expirationDate);
+    console.log(comment);
+    return comment;
     // grab the report we are going to be commenting on
     // if it wasn't found, throw an error saying so
     // if it is not open, throw an error saying so

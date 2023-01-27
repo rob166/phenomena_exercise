@@ -77,7 +77,7 @@ apiRouter.delete('/reports/:reportId', async (req, res, next) => {
 
       try {
             const report = await closeReport(req.params.reportId, password);
-            console.log(report)
+            //console.log(report)
             if (report) {
                   res.send(report)
             }
@@ -97,7 +97,24 @@ apiRouter.delete('/reports/:reportId', async (req, res, next) => {
  * - on success, it should send back the object returned by createReportComment
  * - on caught error, call next(error)
  */
+apiRouter.post('/reports/:reportId/comments', async (req, res, next) => {
+      const content = req.body;
+      console.log(req.body);
+      //console.log(req.params.reportId);
 
+      //const reportData = {};
+
+      try {
+            const comment = await createReportComment(req.params.reportId, content);
+            console.log(comment)
+
+            res.send(comment)
+
+
+      } catch (error) {
+            next(error);
+      }
+});
 
 
 // Export the apiRouter
